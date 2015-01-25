@@ -1,0 +1,24 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# box from cumulus warehouse, or http://cloud-images.ubuntu.com/vagrant/precise/current/
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 512
+  end
+
+  # wpdemo
+  config.vm.define "wpdemo" do |wpdemo|
+    wpdemo.vm.box = "utopic"
+    config.vm.hostname = "wpdemo"
+    config.vm.network "public_network" #, :adapter=>1 , type: "dhcp", :bridge => 'en4: Thunderbolt Ethernet'
+  end
+
+  # Provision with Ansible, 
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "initial_vm_setup.yml"
+  end
+end

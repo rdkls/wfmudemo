@@ -1,0 +1,48 @@
+---
+- hosts: all
+  tasks:
+
+  - name: sources.list use internode mirror
+    sudo: yes
+    copy:
+      src=ansible_files/sources.list
+      dest=/etc/apt/sources.list
+
+  - name: apt update
+    sudo: yes
+    command: apt-get update
+
+  - name: disable sshd dns lookup
+    sudo: yes
+    lineinfile: dest=/etc/ssh/sshd_config state=present regexp="^UseDNS" line="UseDNS no"
+
+  - name: sudoers passwordless
+    sudo: yes
+    copy:
+      src=ansible_files/sudoers
+      dest=/etc/sudoers
+      #validate='visudo %s'
+
+  - name: restart ssh
+    sudo: yes
+    action: service name=ssh state=restarted
+
+  - name: install avahi-daemon
+    sudo: yes
+    apt: pkg=avahi-daemon state=present
+
+  - name: avahi on eth1
+    sudo: yes
+    lineinfile:
+      dest=/etc/avahi/avahi-daemon.conf
+      regexp='^.*allow-interfaces.*'
+      line='allow-interfaces=eth1'
+      state=present
+
+  - name: restart avahi
+    sudo: yes
+    service: name='avahi-daemon' state=restarted
+
+  - name: ssh key for vagrant user
+    sudo: yes
+    action: authorized_key user=vagrant key="ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAuawumCOGhXQU2ykBV9j4lc69e3yTslhIQDSLskDey7vPzmhJ2m9pm79XfWGNLilYG/tagiYd2rFOpuzrln5JN+F4vm5sJnPiAVr2LS/7jAegUaPmH1khlNSGwVGtpgtTBIjgyVf2R1N3qM8PlsNVVJwBLeMzz+i8nKKrmhhp0EiVkM4TPkc/ZHASVEiyak6G0Rs9oVPLZKLxpiKQfdALEMudC9ODlLa1y5NQuJTCxd3uKJm2C6DW2ZL2ygb+FTzEVDcfyelCvFK+IsCabyiUP7nP7SVUnoyRNXFX2cS9h5fo8Zyn8XG4mBuS/rEk+PVTscuRPdxuGz2tD11D+rV7eQ== nicholas_doyle@regency"
